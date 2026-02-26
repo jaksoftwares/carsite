@@ -322,13 +322,30 @@ export interface VehicleCardData {
   price: number;
   price_negotiable: boolean;
   mileage: number;
-  transmission: Transmission;
-  fuel_type: FuelType;
+  transmission: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  fuel_type: {
+    id: string;
+    name: string;
+    slug: string;
+  };
   condition: VehicleCondition;
+  is_new?: boolean;
   primary_image?: string;
   city: string;
-  make_name: string;
-  model_name: string;
+  make: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  model: {
+    id: string;
+    name: string;
+    slug: string;
+  };
   is_featured?: boolean;
   created_at: string;
 }

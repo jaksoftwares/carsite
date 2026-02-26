@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { formatCurrency, formatNumber } from '@/lib/utils'
 import type { VehicleCardData } from '@/types'
 
@@ -22,9 +21,9 @@ export default function VehicleCard({ vehicle }: VehicleCardProps) {
     condition,
     primary_image,
     city,
-    make_name,
-    model_name,
-    is_featured,
+    make,
+    model,
+    is_new,
   } = vehicle
 
   // Get condition label
@@ -35,62 +34,48 @@ export default function VehicleCard({ vehicle }: VehicleCardProps) {
     refurbished: 'Refurbished',
   }
 
-  // Get fuel type label
-  const fuelLabels: Record<string, string> = {
-    petrol: 'Petrol',
-    diesel: 'Diesel',
-    electric: 'Electric',
-    hybrid: 'Hybrid',
-    plug_in_hybrid: 'Plug-in Hybrid',
-  }
-
-  // Get transmission label
-  const transmissionLabels: Record<string, string> = {
-    automatic: 'Automatic',
-    manual: 'Manual',
-    semi_automatic: 'Semi-Auto',
-    cvt: 'CVT',
-  }
-
-  const primaryImage = primary_image || '/placeholder-car.jpg'
+  // Get transmission name (handle both object and string)
+  const transmissionName = typeof transmission === 'object' ? transmission?.name : transmission
+  const fuelName = typeof fuel_type === 'object' ? fuel_type?.name : fuel_type
+  const makeName = typeof make === 'object' ? make?.name : make
+  const modelName = typeof model === 'object' ? model?.name : model
 
   return (
     <div className="group bg-white rounded-lg overflow-hidden border border-[var(--border)] card-hover">
       {/* Image Container */}
       <div className="relative aspect-[4/3] overflow-hidden bg-[var(--background-alt)]">
-        <Link href={`/vehicle/${slug}`}>
-          <Image
-            src={primaryImage}
-            alt={`${year} ${make_name} ${model_name}`}
-            fill
-            className="object-cover image-hover"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-          />
-        </Link>
-        
-        {/* Featured Badge */}
-        {is_featured && (
-          <div className="absolute top-3 left-3 px-2 py-1 bg-[var(--accent)] text-white text-xs font-medium rounded">
-            Featured
+        {primary_image ? (
+          <Link href={`/vehicle/${slug}`}>
+            <img
+              src={primary_image}
+              alt={`${year} ${makeName} ${modelName}`}
+              className="w-full h-full object-cover image-hover"
+            />
+          </Link>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-[var(--foreground-muted)]">
+            <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
           </div>
         )}
-
-        {/* Condition Badge */}
-        <div className="absolute top-3 right-3 px-2 py-1 bg-black/70 text-white text-xs font-medium rounded">
-          {conditionLabels[condition] || condition}
+        
+        {/* Status Badge */}
+        <div className={`absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-lg z-10 ${
+          is_new || condition === 'new' ? 'bg-green-500 text-white' : 'bg-blue-600 text-white'
+        }`}>
+          {is_new || condition === 'new' ? 'Brand New' : 'Used'}
         </div>
       </div>
 
       {/* Content */}
       <div className="p-4">
-        {/* Title */}
         <Link href={`/vehicle/${slug}`}>
           <h3 className="text-lg font-semibold text-[var(--foreground)] group-hover:text-[var(--primary)] transition-colors line-clamp-1">
             {title}
           </h3>
         </Link>
 
-        {/* Price */}
         <div className="mt-2 flex items-baseline gap-2">
           <span className="text-xl font-bold text-[var(--primary)]">
             {formatCurrency(price)}
@@ -100,7 +85,6 @@ export default function VehicleCard({ vehicle }: VehicleCardProps) {
           )}
         </div>
 
-        {/* Quick Specs */}
         <div className="mt-3 flex flex-wrap gap-3 text-sm text-[var(--foreground-muted)]">
           <span className="flex items-center gap-1">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,11 +102,10 @@ export default function VehicleCard({ vehicle }: VehicleCardProps) {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
-            {transmissionLabels[transmission] || transmission}
+            {transmissionName}
           </span>
         </div>
 
-        {/* Location */}
         <div className="mt-2 flex items-center gap-1 text-sm text-[var(--foreground-muted)]">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -131,7 +114,6 @@ export default function VehicleCard({ vehicle }: VehicleCardProps) {
           {city}
         </div>
 
-        {/* CTA Buttons */}
         <div className="mt-4 flex gap-2">
           <Link
             href={`/vehicle/${slug}`}
@@ -140,7 +122,7 @@ export default function VehicleCard({ vehicle }: VehicleCardProps) {
             View Details
           </Link>
           <a
-            href={`https://wa.me/254700000000?text=I'm interested in ${year} ${make_name} ${model_name}`}
+            href={`https://wa.me/254700000000?text=I'm interested in ${year} ${makeName} ${modelName}`}
             target="_blank"
             rel="noopener noreferrer"
             className="px-3 py-2 text-center text-sm font-medium text-white bg-[#25D366] rounded hover:bg-[#20BD5A] transition-colors"

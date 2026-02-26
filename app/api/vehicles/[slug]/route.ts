@@ -12,21 +12,21 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = await params
+    const { slug: identifier } = await params
 
-    // First try to find by slug, then by id
-    let { data: vehicle, error } = await supabase
+    // 1. Try to find by slug
+    let query = supabase
       .from('vehicles')
       .select(`
         *,
-        make:makes(*),
-        model:models(*),
-        body_type:body_types(*),
-        fuel_type:fuel_types(*),
-        transmission:transmissions(*),
-        drive_type:drive_types(*),
-        exterior_color:colors!exterior_color_id(*),
-        interior_color:colors!interior_color_id(*),
+        make:makes(id, name, slug),
+        model:models(id, name, slug),
+        body_type:body_types(id, name, slug),
+        fuel_type:fuel_types(id, name, slug),
+        transmission:transmissions(id, name, slug),
+        drive_type:drive_types(id, name, slug),
+        exterior_color:colors!exterior_color_id(id, name, hex_code),
+        interior_color:colors!interior_color_id(id, name, hex_code),
         images:vehicle_images(*),
         features:vehicle_features(
           feature:features(*),
@@ -41,8 +41,49 @@ export async function GET(
           is_approved
         )
       `)
-      .or(`slug.eq.${slug},id.eq.${slug}`)
+      .eq('slug', identifier)
       .single()
+
+    let { data: vehicle, error } = await query
+
+    // 2. If not found by slug, and identifier looks like a UUID, try by ID
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier)
+    
+    if ((error || !vehicle) && isUuid) {
+      const { data: vehicleById, error: idError } = await supabase
+        .from('vehicles')
+        .select(`
+          *,
+          make:makes(id, name, slug),
+          model:models(id, name, slug),
+          body_type:body_types(id, name, slug),
+          fuel_type:fuel_types(id, name, slug),
+          transmission:transmissions(id, name, slug),
+          drive_type:drive_types(id, name, slug),
+          exterior_color:colors!exterior_color_id(id, name, hex_code),
+          interior_color:colors!interior_color_id(id, name, hex_code),
+          images:vehicle_images(*),
+          features:vehicle_features(
+            feature:features(*),
+            value
+          ),
+          reviews:vehicle_reviews(
+            rating,
+            title,
+            content,
+            reviewer_name,
+            created_at,
+            is_approved
+          )
+        `)
+        .eq('id', identifier)
+        .single()
+      
+      if (!idError && vehicleById) {
+        vehicle = vehicleById
+        error = null
+      }
+    }
 
     if (error || !vehicle) {
       return apiError('Vehicle not found', 404)
@@ -107,7 +148,7 @@ export async function GET(
 
     vehicle.similar_vehicles = similarVehicles?.map((v: any) => ({
       ...v,
-      primary_image: v.images?.find((img: any) => img.is_primary) || v.images?.[0] || null,
+      primary_image: (v.images?.find((img: any) => img.is_primary) || v.images?.[0])?.url || null,
       images: undefined,
     })) || []
 

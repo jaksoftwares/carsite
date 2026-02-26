@@ -138,13 +138,29 @@ export function buildVehicleFilterQuery(
   }
 ) {
   if (filters.make) {
-    query = query.eq('make_id', filters.make)
+    // If it's a UUID, use make_id. Otherwise, it might be a slug.
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(filters.make)
+    if (isUuid) {
+      query = query.eq('make_id', filters.make)
+    } else {
+      query = query.eq('make.slug', filters.make)
+    }
   }
   if (filters.model) {
-    query = query.eq('model_id', filters.model)
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(filters.model)
+    if (isUuid) {
+      query = query.eq('model_id', filters.model)
+    } else {
+      query = query.eq('model.slug', filters.model)
+    }
   }
   if (filters.bodyType) {
-    query = query.eq('body_type_id', filters.bodyType)
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(filters.bodyType)
+    if (isUuid) {
+      query = query.eq('body_type_id', filters.bodyType)
+    } else {
+      query = query.eq('body_type.slug', filters.bodyType)
+    }
   }
   if (filters.fuelType) {
     query = query.eq('fuel_type_id', filters.fuelType)
@@ -189,7 +205,7 @@ export function apiResponse<T>(
   status = 200,
   message?: string
 ): Response {
-  const body = message ? { message, data } : { data }
+  const body = message ? { success: true, message, data } : { success: true, data }
   return new Response(JSON.stringify(body), {
     status,
     headers: { 'Content-Type': 'application/json' },
@@ -201,7 +217,7 @@ export function apiError(
   status = 400
 ): Response {
   return new Response(
-    JSON.stringify({ error: message }),
+    JSON.stringify({ success: false, error: message }),
     { status, headers: { 'Content-Type': 'application/json' } }
   )
 }
@@ -212,7 +228,7 @@ export function apiSuccess<T>(
   status = 200
 ): Response {
   return new Response(
-    JSON.stringify({ message, data }),
+    JSON.stringify({ success: true, message, data }),
     { status, headers: { 'Content-Type': 'application/json' } }
   )
 }

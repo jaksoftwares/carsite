@@ -8,169 +8,44 @@ export const metadata: Metadata = {
   description: 'Your trusted partner for quality vehicles in Kenya. Browse new and used cars, get financing, or sell your car with CarSite.',
 }
 
-// Sample featured vehicles data
-const featuredVehicles = [
-  {
-    id: '1',
-    slug: 'toyota-prado-tx-2023',
-    title: 'Toyota Prado TX 2023',
-    year: 2023,
-    price: 18500000,
-    price_negotiable: false,
-    mileage: 15000,
-    transmission: 'automatic' as const,
-    fuel_type: 'petrol' as const,
-    condition: 'foreign_used' as const,
-    primary_image: 'https://images.unsplash.com/photo-1626668893632-6f3a4466d22f?w=800&q=80',
-    city: 'Nairobi',
-    make_name: 'Toyota',
-    model_name: 'Prado',
-    is_featured: true,
-    created_at: '2024-01-15',
-  },
-  {
-    id: '2',
-    slug: 'mercedes-benz-gle-2022',
-    title: 'Mercedes-Benz GLE 2022',
-    year: 2022,
-    price: 15000000,
-    price_negotiable: true,
-    mileage: 28000,
-    transmission: 'automatic' as const,
-    fuel_type: 'diesel' as const,
-    condition: 'foreign_used' as const,
-    primary_image: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=800&q=80',
-    city: 'Mombasa',
-    make_name: 'Mercedes-Benz',
-    model_name: 'GLE',
-    is_featured: true,
-    created_at: '2024-01-14',
-  },
-  {
-    id: '3',
-    slug: 'bmw-x5-2023',
-    title: 'BMW X5 xDrive40i 2023',
-    year: 2023,
-    price: 13500000,
-    price_negotiable: false,
-    mileage: 8500,
-    transmission: 'automatic' as const,
-    fuel_type: 'petrol' as const,
-    condition: 'new' as const,
-    primary_image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
-    city: 'Nairobi',
-    make_name: 'BMW',
-    model_name: 'X5',
-    is_featured: true,
-    created_at: '2024-01-13',
-  },
-  {
-    id: '4',
-    slug: 'toyota-land-cruiser-2022',
-    title: 'Toyota Land Cruiser VX-R 2022',
-    year: 2022,
-    price: 16500000,
-    price_negotiable: true,
-    mileage: 45000,
-    transmission: 'automatic' as const,
-    fuel_type: 'diesel' as const,
-    condition: 'foreign_used' as const,
-    primary_image: 'https://images.unsplash.com/photo-1600705922612-7d260cb57795?w=800&q=80',
-    city: 'Kisumu',
-    make_name: 'Toyota',
-    model_name: 'Land Cruiser',
-    is_featured: true,
-    created_at: '2024-01-12',
-  },
-]
+async function getHomepageData() {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    
+    const [vehiclesRes, makesRes, filtersRes] = await Promise.all([
+      fetch(`${baseUrl}/api/vehicles?limit=4&status=active`, { next: { revalidate: 3600 } }),
+      fetch(`${baseUrl}/api/makes?featured=true`, { next: { revalidate: 3600 } }),
+      fetch(`${baseUrl}/api/filters`, { next: { revalidate: 3600 } })
+    ])
+    
+    if (!vehiclesRes.ok) throw new Error('Failed to fetch vehicles')
+    if (!makesRes.ok) throw new Error('Failed to fetch makes')
+    if (!filtersRes.ok) throw new Error('Failed to fetch filters')
 
-const latestVehicles = [
-  {
-    id: '5',
-    slug: 'honda-civic-2021',
-    title: 'Honda Civic EX 2021',
-    year: 2021,
-    price: 3200000,
-    price_negotiable: true,
-    mileage: 52000,
-    transmission: 'automatic' as const,
-    fuel_type: 'petrol' as const,
-    condition: 'foreign_used' as const,
-    primary_image: 'https://images.unsplash.com/photo-1606016159991-dfe4f2746ad5?w=800&q=80',
-    city: 'Nairobi',
-    make_name: 'Honda',
-    model_name: 'Civic',
-    is_featured: false,
-    created_at: '2024-01-20',
-  },
-  {
-    id: '6',
-    slug: 'nissan-x-trail-2022',
-    title: 'Nissan X-Trail 2022',
-    year: 2022,
-    price: 4500000,
-    price_negotiable: true,
-    mileage: 38000,
-    transmission: 'automatic' as const,
-    fuel_type: 'petrol' as const,
-    condition: 'foreign_used' as const,
-    primary_image: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=800&q=80',
-    city: 'Nairobi',
-    make_name: 'Nissan',
-    model_name: 'X-Trail',
-    is_featured: false,
-    created_at: '2024-01-19',
-  },
-  {
-    id: '7',
-    slug: 'ford-ranger-2023',
-    title: 'Ford Ranger Wildtrak 2023',
-    year: 2023,
-    price: 6800000,
-    price_negotiable: false,
-    mileage: 12000,
-    transmission: 'automatic' as const,
-    fuel_type: 'diesel' as const,
-    condition: 'new' as const,
-    primary_image: 'https://images.unsplash.com/photo-1667912233401-0e63436c0a73?w=800&q=80',
-    city: 'Nairobi',
-    make_name: 'Ford',
-    model_name: 'Ranger',
-    is_featured: false,
-    created_at: '2024-01-18',
-  },
-  {
-    id: '8',
-    slug: 'mitsubishi-outlander-2022',
-    title: 'Mitsubishi Outlander PHEV 2022',
-    year: 2022,
-    price: 5500000,
-    price_negotiable: true,
-    mileage: 25000,
-    transmission: 'automatic' as const,
-    fuel_type: 'hybrid' as const,
-    condition: 'foreign_used' as const,
-    primary_image: 'https://images.unsplash.com/photo-1570733577524-3a047079e80d?w=800&q=80',
-    city: 'Mombasa',
-    make_name: 'Mitsubishi',
-    model_name: 'Outlander',
-    is_featured: false,
-    created_at: '2024-01-17',
-  },
-]
+    const vehiclesData = await vehiclesRes.json()
+    const makesData = await makesRes.json()
+    const filtersData = await filtersRes.json()
 
-const brands = [
-  { name: 'Toyota', logo: 'T', href: '/inventory?make=toyota' },
-  { name: 'Mercedes-Benz', logo: 'M', href: '/inventory?make=mercedes' },
-  { name: 'BMW', logo: 'B', href: '/inventory?make=bmw' },
-  { name: 'Honda', logo: 'H', href: '/inventory?make=honda' },
-  { name: 'Nissan', logo: 'N', href: '/inventory?make=nissan' },
-  { name: 'Mitsubishi', logo: 'M', href: '/inventory?make=mitsubishi' },
-  { name: 'Ford', logo: 'F', href: '/inventory?make=ford' },
-  { name: 'Land Rover', logo: 'L', href: '/inventory?make=land-rover' },
-]
+    return {
+      featuredVehicles: vehiclesData.success ? vehiclesData.data.vehicles.filter((v: any) => v.is_featured).slice(0, 4) : [],
+      latestVehicles: vehiclesData.success ? vehiclesData.data.vehicles.slice(0, 4) : [],
+      brands: makesData.success ? makesData.data : [],
+      bodyTypes: filtersData.success ? filtersData.data.bodyTypes || [] : [],
+    }
+  } catch (error) {
+    console.error('Error fetching homepage data:', error)
+    return {
+      featuredVehicles: [],
+      latestVehicles: [],
+      brands: [],
+      bodyTypes: [],
+    }
+  }
+}
 
-export default function HomePage() {
+export default async function HomePage() {
+  const { featuredVehicles, latestVehicles, brands, bodyTypes } = await getHomepageData()
+
   return (
     <div>
       {/* Hero Section */}
@@ -193,7 +68,10 @@ export default function HomePage() {
             </p>
           </div>
           
-          <HeroSearch />
+          <HeroSearch 
+            makes={brands} 
+            bodyTypesList={bodyTypes} 
+          />
 
           {/* Stats */}
           <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
@@ -241,7 +119,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredVehicles.map((vehicle) => (
+            {featuredVehicles.map((vehicle: any) => (
               <VehicleCard key={vehicle.id} vehicle={vehicle} />
             ))}
           </div>
@@ -273,20 +151,58 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
-            {brands.map((brand) => (
-              <Link
-                key={brand.name}
-                href={brand.href}
-                className="flex flex-col items-center justify-center p-4 border border-[var(--border)] rounded-lg hover:border-[var(--primary)] hover:shadow-md transition-all group"
-              >
-                <div className="w-12 h-12 bg-[var(--primary)] text-white rounded-full flex items-center justify-center font-bold text-xl mb-2 group-hover:bg-[var(--primary-light)]">
-                  {brand.logo}
-                </div>
-                <span className="text-sm font-medium text-[var(--foreground)] group-hover:text-[var(--primary)]">
-                  {brand.name}
-                </span>
-              </Link>
-            ))}
+            {brands.length > 0 ? (
+              brands.slice(0, 8).map((brand: any) => (
+                <Link
+                  key={brand.id}
+                  href={`/inventory?make=${brand.slug}`}
+                  className="flex flex-col items-center justify-center p-4 border border-[var(--border)] rounded-lg hover:border-[var(--primary)] hover:shadow-md transition-all group"
+                >
+                  <div className="w-12 h-12 bg-[var(--primary)] text-white rounded-full flex items-center justify-center font-bold text-xl mb-2 group-hover:bg-[var(--primary-light)]">
+                    {brand.name.charAt(0)}
+                  </div>
+                  <span className="text-sm font-medium text-[var(--foreground)] group-hover:text-[var(--primary)]">
+                    {brand.name}
+                  </span>
+                </Link>
+              ))
+            ) : (
+              // Fallback if no brands fetched
+              <>
+                <Link href="/inventory?make=toyota" className="flex flex-col items-center justify-center p-4 border border-[var(--border)] rounded-lg hover:border-[var(--primary)] hover:shadow-md transition-all group">
+                  <div className="w-12 h-12 bg-[var(--primary)] text-white rounded-full flex items-center justify-center font-bold text-xl mb-2 group-hover:bg-[var(--primary-light)]">T</div>
+                  <span className="text-sm font-medium text-[var(--foreground)] group-hover:text-[var(--primary)]">Toyota</span>
+                </Link>
+                <Link href="/inventory?make=mercedes-benz" className="flex flex-col items-center justify-center p-4 border border-[var(--border)] rounded-lg hover:border-[var(--primary)] hover:shadow-md transition-all group">
+                  <div className="w-12 h-12 bg-[var(--primary)] text-white rounded-full flex items-center justify-center font-bold text-xl mb-2 group-hover:bg-[var(--primary-light)]">M</div>
+                  <span className="text-sm font-medium text-[var(--foreground)] group-hover:text-[var(--primary)]">Mercedes</span>
+                </Link>
+                <Link href="/inventory?make=bmw" className="flex flex-col items-center justify-center p-4 border border-[var(--border)] rounded-lg hover:border-[var(--primary)] hover:shadow-md transition-all group">
+                  <div className="w-12 h-12 bg-[var(--primary)] text-white rounded-full flex items-center justify-center font-bold text-xl mb-2 group-hover:bg-[var(--primary-light)]">B</div>
+                  <span className="text-sm font-medium text-[var(--foreground)] group-hover:text-[var(--primary)]">BMW</span>
+                </Link>
+                <Link href="/inventory?make=honda" className="flex flex-col items-center justify-center p-4 border border-[var(--border)] rounded-lg hover:border-[var(--primary)] hover:shadow-md transition-all group">
+                  <div className="w-12 h-12 bg-[var(--primary)] text-white rounded-full flex items-center justify-center font-bold text-xl mb-2 group-hover:bg-[var(--primary-light)]">H</div>
+                  <span className="text-sm font-medium text-[var(--foreground)] group-hover:text-[var(--primary)]">Honda</span>
+                </Link>
+                <Link href="/inventory?make=nissan" className="flex flex-col items-center justify-center p-4 border border-[var(--border)] rounded-lg hover:border-[var(--primary)] hover:shadow-md transition-all group">
+                  <div className="w-12 h-12 bg-[var(--primary)] text-white rounded-full flex items-center justify-center font-bold text-xl mb-2 group-hover:bg-[var(--primary-light)]">N</div>
+                  <span className="text-sm font-medium text-[var(--foreground)] group-hover:text-[var(--primary)]">Nissan</span>
+                </Link>
+                <Link href="/inventory?make=mitsubishi" className="flex flex-col items-center justify-center p-4 border border-[var(--border)] rounded-lg hover:border-[var(--primary)] hover:shadow-md transition-all group">
+                  <div className="w-12 h-12 bg-[var(--primary)] text-white rounded-full flex items-center justify-center font-bold text-xl mb-2 group-hover:bg-[var(--primary-light)]">M</div>
+                  <span className="text-sm font-medium text-[var(--foreground)] group-hover:text-[var(--primary)]">Mitsubishi</span>
+                </Link>
+                <Link href="/inventory?make=ford" className="flex flex-col items-center justify-center p-4 border border-[var(--border)] rounded-lg hover:border-[var(--primary)] hover:shadow-md transition-all group">
+                  <div className="w-12 h-12 bg-[var(--primary)] text-white rounded-full flex items-center justify-center font-bold text-xl mb-2 group-hover:bg-[var(--primary-light)]">F</div>
+                  <span className="text-sm font-medium text-[var(--foreground)] group-hover:text-[var(--primary)]">Ford</span>
+                </Link>
+                <Link href="/inventory?make=land-rover" className="flex flex-col items-center justify-center p-4 border border-[var(--border)] rounded-lg hover:border-[var(--primary)] hover:shadow-md transition-all group">
+                  <div className="w-12 h-12 bg-[var(--primary)] text-white rounded-full flex items-center justify-center font-bold text-xl mb-2 group-hover:bg-[var(--primary-light)]">L</div>
+                  <span className="text-sm font-medium text-[var(--foreground)] group-hover:text-[var(--primary)]">Land Rover</span>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -392,7 +308,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {latestVehicles.map((vehicle) => (
+            {latestVehicles.map((vehicle: any) => (
               <VehicleCard key={vehicle.id} vehicle={vehicle} />
             ))}
           </div>

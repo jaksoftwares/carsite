@@ -1,16 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface HeroSearchProps {
-  makes?: { id: string; name: string }[]
-  models?: { id: string; name: string }[]
-  bodyTypesList?: { id: string; name: string }[]
+  makes?: { id: string; name: string; slug: string }[]
+  bodyTypesList?: { id: string; name: string; slug: string }[]
 }
 
-export default function HeroSearch({ makes = [], models = [], bodyTypesList = [] }: HeroSearchProps) {
+export default function HeroSearch({ makes = [], bodyTypesList = [] }: HeroSearchProps) {
   const router = useRouter()
+  const [localMakes, setLocalMakes] = useState(makes)
+  const [localBodyTypes, setLocalBodyTypes] = useState(bodyTypesList)
+  const [loading, setLoading] = useState(!makes.length || !bodyTypesList.length)
+  
   const [formData, setFormData] = useState({
     make: '',
     model: '',
@@ -21,6 +24,34 @@ export default function HeroSearch({ makes = [], models = [], bodyTypesList = []
     yearTo: '',
   })
 
+  // Fetch makes and body types if not provided as props
+  useEffect(() => {
+    if (makes.length && bodyTypesList.length) {
+      setLoading(false)
+      return
+    }
+
+    async function fetchFilterData() {
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+        const res = await fetch(`${baseUrl}/api/filters`, {
+          next: { revalidate: 3600 }
+        })
+        const data = await res.json()
+        if (data.success) {
+          setLocalMakes(data.data.makes || [])
+          setLocalBodyTypes(data.data.bodyTypes || [])
+        }
+      } catch (error) {
+        console.error('Error fetching filter data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchFilterData()
+  }, [makes.length, bodyTypesList.length])
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -28,36 +59,45 @@ export default function HeroSearch({ makes = [], models = [], bodyTypesList = []
     
     if (formData.make) params.set('make', formData.make)
     if (formData.model) params.set('model', formData.model)
-    if (formData.bodyType) params.set('body_type', formData.bodyType)
-    if (formData.priceMin) params.set('price_min', formData.priceMin)
-    if (formData.priceMax) params.set('price_max', formData.priceMax)
-    if (formData.yearFrom) params.set('year_from', formData.yearFrom)
-    if (formData.yearTo) params.set('year_to', formData.yearTo)
+    if (formData.bodyType) params.set('bodyType', formData.bodyType)
+    if (formData.priceMin) params.set('minPrice', formData.priceMin)
+    if (formData.priceMax) params.set('maxPrice', formData.priceMax)
+    if (formData.yearFrom) params.set('minYear', formData.yearFrom)
+    if (formData.yearTo) params.set('maxYear', formData.yearTo)
     
     router.push(`/inventory?${params.toString()}`)
   }
 
-  // Sample makes for display
-  const sampleMakes = [
-    { id: 'toyota', name: 'Toyota' },
-    { id: 'mercedes', name: 'Mercedes-Benz' },
-    { id: 'bmw', name: 'BMW' },
-    { id: 'honda', name: 'Honda' },
-    { id: 'nissan', name: 'Nissan' },
-    { id: 'mitsubishi', name: 'Mitsubishi' },
-    { id: 'ford', name: 'Ford' },
-    { id: 'land-rover', name: 'Land Rover' },
-  ]
+  // Map body type slugs to display names
+  const getBodyTypeName = (slug: string) => {
+    const bodyTypeMap: Record<string, string> = {
+      'suv': 'SUV',
+      'sedan': 'Sedan', 
+      'hatchback': 'Hatchback',
+      'pickup': 'Pickup',
+      'van': 'Van',
+      'coupe': 'Coupe',
+      'wagon': 'Wagon',
+      'convertible': 'Convertible',
+      'crossover': 'Crossover',
+      'mpv': 'MPV',
+    }
+    return bodyTypeMap[slug] || slug
+  }
 
-  const bodyTypes = [
-    { id: 'suv', name: 'SUV' },
-    { id: 'sedan', name: 'Sedan' },
-    { id: 'hatchback', name: 'Hatchback' },
-    { id: 'pickup', name: 'Pickup' },
-    { id: 'van', name: 'Van' },
-    { id: 'coupe', name: 'Coupe' },
-    { id: 'wagon', name: 'Wagon' },
-  ]
+  if (loading) {
+    return (
+      <div className="w-full max-w-4xl mx-auto">
+        <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 animate-pulse">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-10 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="w-full max-w-4xl mx-auto">
@@ -70,12 +110,12 @@ export default function HeroSearch({ makes = [], models = [], bodyTypesList = []
             </label>
             <select
               value={formData.make}
-              onChange={(e) => setFormData({ ...formData, make: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, make: e.target.value, model: '' })}
               className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white"
             >
               <option value="">All Makes</option>
-              {sampleMakes.map((make) => (
-                <option key={make.id} value={make.id}>
+              {localMakes.map((make) => (
+                <option key={make.id} value={make.slug}>
                   {make.name}
                 </option>
               ))}
@@ -94,10 +134,13 @@ export default function HeroSearch({ makes = [], models = [], bodyTypesList = []
               disabled={!formData.make}
             >
               <option value="">All Models</option>
+              {/* Models would need to be fetched based on selected make - for now show common models */}
               <option value="corolla">Corolla</option>
               <option value="civic">Civic</option>
               <option value="rav4">RAV4</option>
               <option value="x5">X5</option>
+              <option value="prado">Prado</option>
+              <option value="land-cruiser">Land Cruiser</option>
             </select>
           </div>
 
@@ -112,9 +155,9 @@ export default function HeroSearch({ makes = [], models = [], bodyTypesList = []
               className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white"
             >
               <option value="">All Types</option>
-              {bodyTypes.map((type) => (
-                <option key={type.id} value={type.id}>
-                  {type.name}
+              {localBodyTypes.map((type) => (
+                <option key={type.id} value={type.slug}>
+                  {getBodyTypeName(type.slug)}
                 </option>
               ))}
             </select>
@@ -185,11 +228,11 @@ export default function HeroSearch({ makes = [], models = [], bodyTypesList = []
             <span className="text-[var(--border-dark)]">|</span>
             <button type="button" onClick={() => router.push('/inventory?condition=foreign_used')} className="text-[var(--primary)] hover:underline">Used Cars</button>
             <span className="text-[var(--border-dark)]">|</span>
-            <button type="button" onClick={() => router.push('/inventory?body_type=suv')} className="text-[var(--primary)] hover:underline">SUVs</button>
+            <button type="button" onClick={() => router.push('/inventory?bodyType=suv')} className="text-[var(--primary)] hover:underline">SUVs</button>
             <span className="text-[var(--border-dark)]">|</span>
             <button type="button" onClick={() => router.push('/inventory?make=toyota')} className="text-[var(--primary)] hover:underline">Toyota</button>
             <span className="text-[var(--border-dark)]">|</span>
-            <button type="button" onClick={() => router.push('/inventory?price_max=5000000')} className="text-[var(--primary)] hover:underline">Under 5M</button>
+            <button type="button" onClick={() => router.push('/inventory?maxPrice=5000000')} className="text-[var(--primary)] hover:underline">Under 5M</button>
           </div>
         </div>
       </form>

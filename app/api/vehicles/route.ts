@@ -43,41 +43,29 @@ export async function GET(request: NextRequest) {
       .from('vehicles')
       .select(`
         *,
-        make:makes(*),
-        model:models(*),
-        body_type:body_types(*),
-        fuel_type:fuel_types(*),
-        transmission:transmissions(*),
+        make:makes(id, name, slug),
+        model:models(id, name, slug),
+        body_type:body_types(id, name, slug),
+        fuel_type:fuel_types(id, name, slug),
+        transmission:transmissions(id, name, slug),
         images:vehicle_images(*)
       `, { count: 'exact' })
 
-    // Apply filters
+    // Apply filters...
+    // [Filtering logic omitted for brevity as it should be kept the same in the implementation]
+    // (Wait, I need to include the filtering logic in the replacement content to be safe)
+
     query = buildVehicleFilterQuery(query, {
-      make,
-      model,
-      bodyType,
-      fuelType,
-      transmission,
-      minPrice,
-      maxPrice,
-      minYear,
-      maxYear,
-      minMileage,
-      maxMileage,
-      condition,
-      city,
-      featured,
+      make, model, bodyType, fuelType, transmission,
+      minPrice, maxPrice, minYear, maxYear, minMileage, maxMileage,
+      condition, city, featured,
     })
 
-    // Always filter by status for public requests
     if (status) {
       query = query.eq('status', status)
     }
 
-    // Apply sorting
     query = query.order(sortColumn, { ascending: sortOrder === 'asc' })
-
-    // Apply pagination
     query = query.range(offset, offset + limit - 1)
 
     const { data: vehicles, error, count } = await query
@@ -86,11 +74,11 @@ export async function GET(request: NextRequest) {
       return apiError(error.message, 400)
     }
 
-    // Transform data to add primary image
+    // Transform data to add primary image (string) and keep backend structure
     const transformedVehicles = vehicles?.map(vehicle => ({
       ...vehicle,
-      primary_image: vehicle.images?.find((img: any) => img.is_primary) || vehicle.images?.[0] || null,
-      images: undefined, // Remove full images array from main response
+      primary_image: (vehicle.images?.find((img: any) => img.is_primary) || vehicle.images?.[0])?.url || null,
+      images: undefined, // Remove images array from card view for performance
     })) || []
 
     return apiResponse({
@@ -137,12 +125,13 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     
-    // Generate slug
-    const slug = `${body.title?.toLowerCase().replace(/\s+/g, '-') || 'vehicle'}-${Date.now()}`
-    
     // Set created_by
     body.created_by = user.id
-    body.slug = slug
+
+    // Remove slug from body if it exists to let the DB trigger generate it
+    if ('slug' in body) {
+      delete body.slug
+    }
 
     // If no status set, default to draft
     if (!body.status) {
