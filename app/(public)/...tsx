@@ -1,6 +1,8 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import HeroSearch from '@/components/vehicles/HeroSearch'
 import VehicleCard from '@/components/vehicles/VehicleCard'
+import { formatCurrency } from '@/lib/utils'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -172,8 +174,8 @@ const brands = [
 
 export default function HomePage() {
   return (
-    <div>
       {/* Hero Section */}
+    <div Section */}
       <section className="relative min-h-[600px] flex items-center bg-gradient-to-br from-[var(--primary-dark)] via-[var(--primary)] to-[var(--primary-light)]">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
