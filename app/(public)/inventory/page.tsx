@@ -18,7 +18,7 @@ async function getInventoryData(searchParams: any) {
   Object.keys(searchParams).forEach(key => {
     if (searchParams[key]) params.set(key, searchParams[key])
   })
-  if (!params.has('limit')) params.set('limit', '12')
+  if (!params.has('limit')) params.set('limit', '50')
 
   try {
     const [vehiclesRes, filtersRes] = await Promise.all([
@@ -70,114 +70,117 @@ export default async function InventoryPage({
       </div>
 
       <div className="container-custom py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar */}
-          <aside className="w-full lg:w-72 flex-shrink-0">
-            <div className="bg-white rounded-lg border border-[var(--border)] p-6 sticky top-24 shadow-sm">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-[var(--foreground)]">
-                  Refine Search
-                </h2>
-                <Link href="/inventory" className="text-sm text-[var(--primary)] hover:underline font-medium">
-                  Reset
-                </Link>
+        {/* Mobile Filter Toggle & Horizontal Sticky Filters */}
+        <div className="sticky top-16 z-30 bg-[var(--background-alt)] pb-4 mb-4">
+          <div className="bg-white rounded-lg border border-[var(--border)] p-4 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-[var(--foreground)]">
+                Filter Vehicles
+              </h2>
+              <Link href="/inventory" className="text-sm text-[var(--primary)] hover:underline font-medium">
+                Reset
+              </Link>
+            </div>
+
+            <form action="/inventory" method="GET" className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {/* Condition Filter */}
+              <div>
+                <label className="block text-xs font-semibold text-[var(--foreground)] mb-1">
+                  Condition
+                </label>
+                <select name="condition" defaultValue={resolvedParams.condition || ''} className="w-full px-2 py-1.5 text-sm border border-[var(--border)] rounded-lg bg-gray-50 focus:ring-2 focus:ring-[var(--primary)] outline-none">
+                  <option value="">All</option>
+                  {filters.conditions.map((c: any) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
               </div>
 
-              <form action="/inventory" method="GET" className="space-y-6">
-                {/* Condition Filter */}
-                <div>
-                  <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">
-                    Condition
-                  </label>
-                  <select name="condition" defaultValue={resolvedParams.condition || ''} className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-gray-50 text-sm focus:ring-2 focus:ring-[var(--primary)] outline-none">
-                    <option value="">All Conditions</option>
-                    {filters.conditions.map((c: any) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
+              {/* Make Filter */}
+              <div>
+                <label className="block text-xs font-semibold text-[var(--foreground)] mb-1">
+                  Make
+                </label>
+                <select name="make" defaultValue={resolvedParams.make || ''} className="w-full px-2 py-1.5 text-sm border border-[var(--border)] rounded-lg bg-gray-50 focus:ring-2 focus:ring-[var(--primary)] outline-none">
+                  <option value="">All Makes</option>
+                  {filters.makes.map((m: any) => (
+                    <option key={m.slug} value={m.slug}>{m.name}</option>
+                  ))}
+                </select>
+              </div>
 
-                {/* Make Filter */}
-                <div>
-                  <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">
-                    Make / Brand
-                  </label>
-                  <select name="make" defaultValue={resolvedParams.make || ''} className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-gray-50 text-sm focus:ring-2 focus:ring-[var(--primary)] outline-none">
-                    <option value="">All Makes</option>
-                    {filters.makes.map((m: any) => (
-                      <option key={m.slug} value={m.slug}>{m.name}</option>
-                    ))}
-                  </select>
-                </div>
+              {/* Body Type Filter */}
+              <div>
+                <label className="block text-xs font-semibold text-[var(--foreground)] mb-1">
+                  Body Type
+                </label>
+                <select name="bodyType" defaultValue={resolvedParams.bodyType || ''} className="w-full px-2 py-1.5 text-sm border border-[var(--border)] rounded-lg bg-gray-50 focus:ring-2 focus:ring-[var(--primary)] outline-none">
+                  <option value="">All Types</option>
+                  {filters.bodyTypes.map((b: any) => (
+                    <option key={b.slug} value={b.slug}>{b.name}</option>
+                  ))}
+                </select>
+              </div>
 
-                {/* Body Type Filter */}
-                <div>
-                  <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">
-                    Body Type
-                  </label>
-                  <select name="bodyType" defaultValue={resolvedParams.bodyType || ''} className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-gray-50 text-sm focus:ring-2 focus:ring-[var(--primary)] outline-none">
-                    <option value="">All Types</option>
-                    {filters.bodyTypes.map((b: any) => (
-                      <option key={b.slug} value={b.slug}>{b.name}</option>
-                    ))}
-                  </select>
-                </div>
+              {/* Price Range */}
+              <div>
+                <label className="block text-xs font-semibold text-[var(--foreground)] mb-1">
+                  Min Price
+                </label>
+                <input
+                  name="minPrice"
+                  type="number"
+                  placeholder="Min"
+                  defaultValue={resolvedParams.minPrice || ''}
+                  className="w-full px-2 py-1.5 text-sm border border-[var(--border)] rounded-lg bg-gray-50 focus:ring-2 focus:ring-[var(--primary)] outline-none"
+                />
+              </div>
 
-                {/* Price Range */}
-                <div>
-                  <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">
-                    Price Range
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      name="minPrice"
-                      type="number"
-                      placeholder="Min"
-                      defaultValue={resolvedParams.minPrice || ''}
-                      className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-gray-50 text-sm focus:ring-2 focus:ring-[var(--primary)] outline-none"
-                    />
-                    <input
-                      name="maxPrice"
-                      type="number"
-                      placeholder="Max"
-                      defaultValue={resolvedParams.maxPrice || ''}
-                      className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-gray-50 text-sm focus:ring-2 focus:ring-[var(--primary)] outline-none"
-                    />
-                  </div>
-                </div>
+              <div>
+                <label className="block text-xs font-semibold text-[var(--foreground)] mb-1">
+                  Max Price
+                </label>
+                <input
+                  name="maxPrice"
+                  type="number"
+                  placeholder="Max"
+                  defaultValue={resolvedParams.maxPrice || ''}
+                  className="w-full px-2 py-1.5 text-sm border border-[var(--border)] rounded-lg bg-gray-50 focus:ring-2 focus:ring-[var(--primary)] outline-none"
+                />
+              </div>
 
-                {/* Year */}
-                <div>
-                  <label className="block text-sm font-semibold text-[var(--foreground)] mb-2">
-                    Year Range
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      name="minYear"
-                      type="number"
-                      placeholder="From"
-                      defaultValue={resolvedParams.minYear || ''}
-                      className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-gray-50 text-sm focus:ring-2 focus:ring-[var(--primary)] outline-none"
-                    />
-                    <input
-                      name="maxYear"
-                      type="number"
-                      placeholder="To"
-                      defaultValue={resolvedParams.maxYear || ''}
-                      className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-gray-50 text-sm focus:ring-2 focus:ring-[var(--primary)] outline-none"
-                    />
-                  </div>
-                </div>
+              {/* Year */}
+              <div>
+                <label className="block text-xs font-semibold text-[var(--foreground)] mb-1">
+                  Year
+                </label>
+                <select name="maxYear" defaultValue={resolvedParams.maxYear || ''} className="w-full px-2 py-1.5 text-sm border border-[var(--border)] rounded-lg bg-gray-50 focus:ring-2 focus:ring-[var(--primary)] outline-none">
+                  <option value="">Any Year</option>
+                  <option value="2024">2024</option>
+                  <option value="2023">2023</option>
+                  <option value="2022">2022</option>
+                  <option value="2021">2021</option>
+                  <option value="2020">2020</option>
+                  <option value="2019">2019</option>
+                  <option value="2018">2018</option>
+                  <option value="2017">2017</option>
+                  <option value="2016">2016</option>
+                  <option value="2015">2015</option>
+                </select>
+              </div>
 
-                <button type="submit" className="w-full py-3 bg-[var(--primary)] text-white font-bold rounded-lg hover:bg-[var(--primary-dark)] transition-all shadow-md active:scale-95">
+              <div className="col-span-2 md:col-span-3 lg:col-span-6 mt-2">
+                <button type="submit" className="w-full py-2 bg-[var(--primary)] text-white font-bold rounded-lg hover:bg-[var(--primary-dark)] transition-all text-sm">
                   Apply Filters
                 </button>
-              </form>
-            </div>
-          </aside>
+              </div>
+            </form>
+          </div>
+        </div>
 
+        <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Content */}
-          <main className="flex-1">
+          <div className="flex-1">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div className="text-[var(--foreground)] font-medium">
                 Showing <span className="text-[var(--primary)] font-bold">{pagination.total}</span> vehicles
@@ -190,7 +193,7 @@ export default async function InventoryPage({
             </div>
 
             {/* Vehicle Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {vehicles.length > 0 ? (
                 vehicles.map((vehicle: any) => (
                   <VehicleCard key={vehicle.id} vehicle={vehicle} />
@@ -253,7 +256,7 @@ export default async function InventoryPage({
                 </div>
               </div>
             )}
-          </main>
+          </div>
         </div>
       </div>
     </div>

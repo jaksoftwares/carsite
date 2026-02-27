@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 
 interface VehicleActionsProps {
   vehicleTitle: string
@@ -10,8 +10,15 @@ interface VehicleActionsProps {
 }
 
 export default function VehicleActions({ vehicleTitle, vehicleYear, makeName, modelName }: VehicleActionsProps) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const handleShare = () => {
-    if (typeof navigator !== 'undefined' && navigator.share) {
+    if (!mounted) return
+    if (navigator.share) {
       navigator.share({
         title: vehicleTitle,
         text: `Check out this ${vehicleYear} ${makeName} ${modelName}`,
@@ -24,7 +31,12 @@ export default function VehicleActions({ vehicleTitle, vehicleYear, makeName, mo
   }
 
   const handlePrint = () => {
+    if (!mounted) return
     window.print()
+  }
+
+  if (!mounted) {
+    return null
   }
 
   return (

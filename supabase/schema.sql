@@ -181,6 +181,8 @@ CREATE TABLE vehicles (
     city TEXT,
     is_featured BOOLEAN DEFAULT FALSE,
     is_premium BOOLEAN DEFAULT FALSE,
+    is_top_sale BOOLEAN DEFAULT FALSE,
+    is_popular BOOLEAN DEFAULT FALSE,
     view_count INT DEFAULT 0,
     inquiry_count INT DEFAULT 0,
     created_by UUID REFERENCES profiles(id),

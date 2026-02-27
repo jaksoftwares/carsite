@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     
     // Pagination
     const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '12')
+    const limit = parseInt(searchParams.get('limit') || '50')
     const offset = (page - 1) * limit
 
     // Sorting
@@ -36,6 +36,8 @@ export async function GET(request: NextRequest) {
     const condition = searchParams.get('condition')
     const city = searchParams.get('city')
     const featured = searchParams.get('featured') === 'true' ? true : undefined
+    const topSale = searchParams.get('topSale') === 'true' ? true : undefined
+    const popular = searchParams.get('popular') === 'true' ? true : undefined
     const status = searchParams.get('status') || 'active'
 
     // Build query
@@ -60,6 +62,14 @@ export async function GET(request: NextRequest) {
       minPrice, maxPrice, minYear, maxYear, minMileage, maxMileage,
       condition, city, featured,
     })
+
+    if (topSale) {
+      query = query.eq('is_top_sale', true)
+    }
+
+    if (popular) {
+      query = query.eq('is_popular', true)
+    }
 
     if (status) {
       query = query.eq('status', status)

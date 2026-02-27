@@ -13,7 +13,7 @@ async function getHomepageData() {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
     
     const [vehiclesRes, makesRes, filtersRes] = await Promise.all([
-      fetch(`${baseUrl}/api/vehicles?limit=4&status=active`, { next: { revalidate: 3600 } }),
+      fetch(`${baseUrl}/api/vehicles?limit=50&status=active`, { next: { revalidate: 3600 } }),
       fetch(`${baseUrl}/api/makes?featured=true`, { next: { revalidate: 3600 } }),
       fetch(`${baseUrl}/api/filters`, { next: { revalidate: 3600 } })
     ])
@@ -26,9 +26,13 @@ async function getHomepageData() {
     const makesData = await makesRes.json()
     const filtersData = await filtersRes.json()
 
+    const allVehicles = vehiclesData.success ? vehiclesData.data.vehicles : []
+
     return {
-      featuredVehicles: vehiclesData.success ? vehiclesData.data.vehicles.filter((v: any) => v.is_featured).slice(0, 4) : [],
-      latestVehicles: vehiclesData.success ? vehiclesData.data.vehicles.slice(0, 4) : [],
+      featuredVehicles: allVehicles.filter((v: any) => v.is_featured).slice(0, 8),
+      topSaleVehicles: allVehicles.filter((v: any) => v.is_top_sale).slice(0, 8),
+      popularVehicles: allVehicles.filter((v: any) => v.is_popular).slice(0, 8),
+      latestVehicles: allVehicles.slice(0, 8),
       brands: makesData.success ? makesData.data : [],
       bodyTypes: filtersData.success ? filtersData.data.bodyTypes || [] : [],
     }
@@ -36,6 +40,8 @@ async function getHomepageData() {
     console.error('Error fetching homepage data:', error)
     return {
       featuredVehicles: [],
+      topSaleVehicles: [],
+      popularVehicles: [],
       latestVehicles: [],
       brands: [],
       bodyTypes: [],
@@ -44,7 +50,7 @@ async function getHomepageData() {
 }
 
 export default async function HomePage() {
-  const { featuredVehicles, latestVehicles, brands, bodyTypes } = await getHomepageData()
+  const { featuredVehicles, topSaleVehicles, popularVehicles, latestVehicles, brands, bodyTypes } = await getHomepageData()
 
   return (
     <div>
@@ -137,6 +143,96 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Top Sales Section */}
+      {topSaleVehicles.length > 0 && (
+        <section className="py-16 bg-white">
+          <div className="container-custom">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold text-[var(--foreground)]">
+                  Top Sales
+                </h2>
+                <p className="text-[var(--foreground-muted)] mt-1">
+                  Best deals at unbeatable prices
+                </p>
+              </div>
+              <Link
+                href="/inventory?topSale=true"
+                className="hidden md:flex items-center gap-2 text-[var(--primary)] font-medium hover:underline"
+              >
+                View All Top Sales
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {topSaleVehicles.map((vehicle: any) => (
+                <VehicleCard key={vehicle.id} vehicle={vehicle} />
+              ))}
+            </div>
+
+            <div className="mt-8 text-center md:hidden">
+              <Link
+                href="/inventory?topSale=true"
+                className="inline-flex items-center gap-2 text-[var(--primary)] font-medium hover:underline"
+              >
+                View All Top Sales
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Popular Search Section */}
+      {popularVehicles.length > 0 && (
+        <section className="py-16 bg-[var(--background-alt)]">
+          <div className="container-custom">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold text-[var(--foreground)]">
+                  Popular Searches
+                </h2>
+                <p className="text-[var(--foreground-muted)] mt-1">
+                  Most searched vehicles by our customers
+                </p>
+              </div>
+              <Link
+                href="/inventory?popular=true"
+                className="hidden md:flex items-center gap-2 text-[var(--primary)] font-medium hover:underline"
+              >
+                View All Popular
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {popularVehicles.map((vehicle: any) => (
+                <VehicleCard key={vehicle.id} vehicle={vehicle} />
+              ))}
+            </div>
+
+            <div className="mt-8 text-center md:hidden">
+              <Link
+                href="/inventory?popular=true"
+                className="inline-flex items-center gap-2 text-[var(--primary)] font-medium hover:underline"
+              >
+                View All Popular
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Browse by Brand */}
       <section className="py-16 bg-white">
