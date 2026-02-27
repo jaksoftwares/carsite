@@ -3,6 +3,10 @@ import Image from 'next/image'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { formatCurrency, formatNumber } from '@/lib/utils'
+import VehicleCard from '@/components/vehicles/VehicleCard'
+import type { VehicleCardData } from '@/types'
+import VehicleActions from '@/components/vehicles/VehicleActions'
+import VehicleEnquiryForm from '@/components/vehicles/VehicleEnquiryForm'
 
 async function getVehicle(slug: string) {
   try {
@@ -16,6 +20,55 @@ async function getVehicle(slug: string) {
   } catch (error) {
     console.error('Error fetching vehicle:', error)
     return null
+  }
+}
+
+async function getRelatedVehicles(vehicle: any, limit: number = 4) {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const makeId = vehicle.make?.id
+    const bodyTypeId = vehicle.body_type_id
+    const price = vehicle.price
+    
+    // Calculate price range (±30%)
+    const minPrice = Math.floor(price * 0.7)
+    const maxPrice = Math.ceil(price * 1.3)
+    
+    // Build query params - prioritize same make, then body type, then price range
+    const params = new URLSearchParams()
+    params.set('limit', '8') // Fetch more to filter out current vehicle
+    params.set('status', 'active')
+    
+    // Filter by make if available
+    if (makeId) {
+      params.set('make', makeId)
+    }
+    
+    // Filter by body type
+    if (bodyTypeId) {
+      params.set('bodyType', bodyTypeId)
+    }
+    
+    // Price range
+    params.set('minPrice', minPrice.toString())
+    params.set('maxPrice', maxPrice.toString())
+    
+    const res = await fetch(`${baseUrl}/api/vehicles?${params.toString()}`, {
+      next: { revalidate: 3600 }
+    })
+    
+    if (!res.ok) return []
+    const data = await res.json()
+    let vehicles = data.success && data.data?.vehicles ? data.data.vehicles : []
+    
+    // Filter out the current vehicle
+    vehicles = vehicles.filter((v: any) => v.id !== vehicle.id)
+    
+    // Return limited number
+    return vehicles.slice(0, limit)
+  } catch (error) {
+    console.error('Error fetching related vehicles:', error)
+    return []
   }
 }
 
@@ -34,6 +87,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function VehicleDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const vehicle = await getVehicle(slug)
+  const relatedVehicles = vehicle ? await getRelatedVehicles(vehicle, 4) : []
 
   if (!vehicle) {
     notFound()
@@ -42,6 +96,27 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
   // Get first valid image from vehicle images
   const validImages = vehicle.images?.filter((img: any) => img.url && img.url.trim() !== '') || []
   const primaryImage = validImages.length > 0 ? validImages[0].url : ''
+
+  // Prepare vehicle card data for related vehicles
+  const relatedVehiclesData: VehicleCardData[] = relatedVehicles.map((v: any) => ({
+    id: v.id,
+    slug: v.slug,
+    title: v.title,
+    year: v.year,
+    price: v.price,
+    price_negotiable: v.price_negotiable,
+    mileage: v.mileage,
+    transmission: v.transmission || { id: '', name: 'Auto', slug: 'automatic' },
+    fuel_type: v.fuel_type || { id: '', name: 'Petrol', slug: 'petrol' },
+    condition: v.condition,
+    is_new: v.is_new,
+    primary_image: v.primary_image,
+    city: v.city,
+    make: v.make || { id: '', name: '', slug: '' },
+    model: v.model || { id: '', name: '', slug: '' },
+    is_featured: v.is_featured,
+    created_at: v.created_at,
+  }))
 
   return (
     <div className="min-h-screen bg-[var(--background-alt)]">
@@ -68,7 +143,7 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
           <div className="lg:col-span-2">
             {/* Main Image */}
             {primaryImage && (
-              <div className="relative aspect-[16/10] bg-white rounded-lg overflow-hidden mb-4 shadow-sm">
+              <div className="relative aspect-[16/10] bg-white rounded-lg overflow-hidden mb-4 shadow-sm group">
                 <Image
                   src={primaryImage}
                   alt={vehicle.title}
@@ -76,6 +151,24 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
                   className="object-cover"
                   priority
                 />
+                
+                {/* Image overlay actions (Client Component) */}
+                <VehicleActions 
+                  vehicleTitle={vehicle.title}
+                  vehicleYear={vehicle.year}
+                  makeName={vehicle.make?.name || ''}
+                  modelName={vehicle.model?.name || ''}
+                />
+
+                {/* Image count badge */}
+                {validImages.length > 1 && (
+                  <div className="absolute bottom-3 left-3 px-3 py-1.5 bg-black/70 backdrop-blur-sm text-white text-sm font-medium rounded-full">
+                    <svg className="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {validImages.length} Photos
+                  </div>
+                )}
               </div>
             )}
 
@@ -218,6 +311,25 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
                   <span className="text-[var(--foreground)] font-mono text-xs">{vehicle.vin || 'N/A'}</span>
                 </div>
               </div>
+
+              {/* Vehicle Stats */}
+              <div className="mt-6 pt-4 border-t border-[var(--border)]">
+                <div className="flex items-center justify-between text-sm text-[var(--foreground-muted)]">
+                  <div className="flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    {formatNumber(vehicle.views || 0)} views
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Listed {new Date(vehicle.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Contact Card */}
@@ -262,37 +374,68 @@ export default async function VehicleDetailPage({ params }: { params: Promise<{ 
                   </svg>
                   WhatsApp Now
                 </a>
+                <Link
+                  href={`/get-financed?vehicle=${vehicle.id}&price=${vehicle.price}`}
+                  className="flex items-center justify-center gap-2 w-full py-3 bg-[var(--foreground)] text-white font-bold rounded-lg hover:bg-black transition-all shadow-md active:scale-95"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Get Financed
+                </Link>
               </div>
 
-              {/* Enquiry Form */}
-              <div className="mt-8 pt-6 border-t border-[var(--border)]">
-                <h3 className="text-base font-bold text-[var(--foreground)] mb-4">
-                  Interested? Send an Enquiry
-                </h3>
-                <form className="space-y-4">
-                  <input
-                    type="text"
-                    placeholder="Your Full Name"
-                    className="w-full px-4 py-3 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none transition-all"
-                  />
-                  <input
-                    type="tel"
-                    placeholder="Phone Number"
-                    className="w-full px-4 py-3 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none transition-all"
-                  />
-                  <textarea
-                    placeholder="I'm interested in this vehicle and would like to know more details or book a test drive."
-                    rows={4}
-                    className="w-full px-4 py-3 border border-[var(--border)] rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none transition-all resize-none"
-                  ></textarea>
-                  <button className="w-full py-3 bg-[var(--foreground)] text-white font-bold rounded-lg hover:bg-black transition-all shadow-md">
-                    Submit Enquiry
-                  </button>
-                </form>
-              </div>
+              {/* Enquiry Form (Client Component) */}
+              <VehicleEnquiryForm 
+                vehicleId={vehicle.id}
+                vehicleTitle={vehicle.title}
+              />
             </div>
           </div>
         </div>
+
+        {/* Related Vehicles Section */}
+        {relatedVehiclesData.length > 0 && (
+          <div className="mt-16">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-2xl font-bold text-[var(--foreground)]">
+                  Related Vehicles
+                </h2>
+                <p className="text-[var(--foreground-muted)] mt-1">
+                  Similar {vehicle.make?.name} {vehicle.body_type?.name || 'vehicles'} you might like
+                </p>
+              </div>
+              <Link 
+                href={`/inventory?make=${vehicle.make?.slug}&bodyType=${vehicle.body_type?.slug}`}
+                className="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-white border-2 border-[var(--border)] text-[var(--foreground)] font-semibold rounded-lg hover:border-[var(--primary)] hover:text-[var(--primary)] transition-all"
+              >
+                View All
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {relatedVehiclesData.map((relatedVehicle) => (
+                <VehicleCard key={relatedVehicle.id} vehicle={relatedVehicle} />
+              ))}
+            </div>
+
+            <div className="mt-8 text-center sm:hidden">
+              <Link 
+                href={`/inventory?make=${vehicle.make?.slug}&bodyType=${vehicle.body_type?.slug}`}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--primary)] text-white font-semibold rounded-lg hover:bg-[var(--primary-dark)] transition-all"
+              >
+                View All Related Vehicles
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
