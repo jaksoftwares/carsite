@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 
 const quickLinks = [
   { name: 'New Cars', href: '/inventory?condition=new' },
@@ -32,8 +33,13 @@ export default function Footer() {
           {/* Column 1 - Brand */}
           <div>
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-white rounded flex items-center justify-center">
-                <span className="text-[var(--primary)] font-bold text-lg">C</span>
+              <div className="relative w-10 h-10 overflow-hidden rounded bg-white">
+                <Image
+                  src="/logo.jpg"
+                  alt="CarSite Logo"
+                  fill
+                  className="object-cover"
+                />
               </div>
               <span className="text-xl font-bold">CarSite</span>
             </Link>

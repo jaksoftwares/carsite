@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 
 const navigation = [
@@ -39,8 +40,13 @@ export default function Header() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-[var(--primary)] rounded flex items-center justify-center">
-              <span className="text-white font-bold text-lg">C</span>
+            <div className="relative w-10 h-10 overflow-hidden rounded">
+              <Image
+                src="/logo.jpg"
+                alt="CarSite Logo"
+                fill
+                className="object-cover"
+              />
             </div>
             <span className="text-xl font-bold text-[var(--primary)] hidden sm:block">
               CarSite

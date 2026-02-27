@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { 
   LayoutDashboard, 
@@ -17,7 +18,7 @@ import {
   Menu,
   X,
   BarChart3,
-  Image,
+  Image as ImageIcon,
   Tags,
   Bell
 } from 'lucide-react'
@@ -36,7 +37,7 @@ const sidebarItems: SidebarItem[] = [
   { title: 'Enquiries', href: '/admin/enquiries', icon: <MessageSquare size={20} />, badge: 5 },
   { title: 'Blog', href: '/admin/blog', icon: <FileText size={20} /> },
   { title: 'FAQs', href: '/admin/faq', icon: <HelpCircle size={20} /> },
-  { title: 'Media', href: '/admin/media', icon: <Image size={20} /> },
+  { title: 'Media', href: '/admin/media', icon: <ImageIcon size={20} /> },
   { title: 'Analytics', href: '/admin/analytics', icon: <BarChart3 size={20} /> },
   { title: 'Settings', href: '/admin/settings', icon: <Settings size={20} /> },
 ]
@@ -72,15 +73,25 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <div className="flex items-center justify-between h-16 px-4 border-b border-slate-700">
           {!collapsed && (
             <Link href="/admin/dashboard" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                <Car size={18} className="text-white" />
+              <div className="relative w-8 h-8 overflow-hidden rounded-lg bg-white">
+                <Image 
+                  src="/logo.jpg"
+                  alt="CarSite Logo"
+                  fill
+                  className="object-cover"
+                />
               </div>
               <span className="font-bold text-lg">CarSite</span>
             </Link>
           )}
           {collapsed && (
-            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mx-auto">
-              <Car size={18} className="text-white" />
+            <div className="relative w-8 h-8 overflow-hidden rounded-lg bg-white mx-auto">
+              <Image 
+                src="/logo.jpg"
+                alt="CarSite Logo"
+                fill
+                className="object-cover"
+              />
             </div>
           )}
           <button 
