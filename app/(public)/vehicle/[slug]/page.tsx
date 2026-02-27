@@ -10,7 +10,7 @@ import VehicleEnquiryForm from '@/components/vehicles/VehicleEnquiryForm'
 
 async function getVehicle(slug: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL!
     const res = await fetch(`${baseUrl}/api/vehicles/${slug}`, {
       next: { revalidate: 3600 }
     })
@@ -25,7 +25,7 @@ async function getVehicle(slug: string) {
 
 async function getRelatedVehicles(vehicle: any, limit: number = 4) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL!
     const makeId = vehicle.make?.id
     const bodyTypeId = vehicle.body_type_id
     const price = vehicle.price

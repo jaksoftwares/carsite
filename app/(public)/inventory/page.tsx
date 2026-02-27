@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 }
 
 async function getInventoryData(searchParams: any) {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL!
   
   // Create params for vehicles
   const params = new URLSearchParams()

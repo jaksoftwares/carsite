@@ -39,7 +39,7 @@ export default function HeroSearch({ makes = [], bodyTypesList = [] }: HeroSearc
 
     async function fetchFilterData() {
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL!
         const res = await fetch(`${baseUrl}/api/filters`, {
           next: { revalidate: 3600 }
         })

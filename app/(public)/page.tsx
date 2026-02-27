@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 async function getHomepageData() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL!
     
     const [vehiclesRes, makesRes, filtersRes] = await Promise.all([
       fetch(`${baseUrl}/api/vehicles?limit=50&status=active`, { next: { revalidate: 3600 } }),
