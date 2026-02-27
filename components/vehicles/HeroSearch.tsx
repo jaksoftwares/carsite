@@ -24,6 +24,12 @@ export default function HeroSearch({ makes = [], bodyTypesList = [] }: HeroSearc
     yearTo: '',
   })
 
+  // Hydration fix
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   // Fetch makes and body types if not provided as props
   useEffect(() => {
     if (makes.length && bodyTypesList.length) {
@@ -112,6 +118,7 @@ export default function HeroSearch({ makes = [], bodyTypesList = [] }: HeroSearc
               value={formData.make}
               onChange={(e) => setFormData({ ...formData, make: e.target.value, model: '' })}
               className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white"
+              suppressHydrationWarning
             >
               <option value="">All Makes</option>
               {localMakes.map((make) => (
@@ -132,6 +139,7 @@ export default function HeroSearch({ makes = [], bodyTypesList = [] }: HeroSearc
               onChange={(e) => setFormData({ ...formData, model: e.target.value })}
               className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white"
               disabled={!formData.make}
+              suppressHydrationWarning
             >
               <option value="">All Models</option>
               {/* Models would need to be fetched based on selected make - for now show common models */}
@@ -153,6 +161,7 @@ export default function HeroSearch({ makes = [], bodyTypesList = [] }: HeroSearc
               value={formData.bodyType}
               onChange={(e) => setFormData({ ...formData, bodyType: e.target.value })}
               className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-white"
+              suppressHydrationWarning
             >
               <option value="">All Types</option>
               {localBodyTypes.map((type) => (
@@ -175,6 +184,7 @@ export default function HeroSearch({ makes = [], bodyTypesList = [] }: HeroSearc
                 value={formData.priceMin}
                 onChange={(e) => setFormData({ ...formData, priceMin: e.target.value })}
                 className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                suppressHydrationWarning
               />
               <input
                 type="number"
@@ -182,6 +192,7 @@ export default function HeroSearch({ makes = [], bodyTypesList = [] }: HeroSearc
                 value={formData.priceMax}
                 onChange={(e) => setFormData({ ...formData, priceMax: e.target.value })}
                 className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                suppressHydrationWarning
               />
             </div>
           </div>
@@ -198,6 +209,7 @@ export default function HeroSearch({ makes = [], bodyTypesList = [] }: HeroSearc
                 value={formData.yearFrom}
                 onChange={(e) => setFormData({ ...formData, yearFrom: e.target.value })}
                 className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                suppressHydrationWarning
               />
               <input
                 type="number"
@@ -205,6 +217,7 @@ export default function HeroSearch({ makes = [], bodyTypesList = [] }: HeroSearc
                 value={formData.yearTo}
                 onChange={(e) => setFormData({ ...formData, yearTo: e.target.value })}
                 className="w-full px-3 py-2 border border-[var(--border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                suppressHydrationWarning
               />
             </div>
           </div>
@@ -214,6 +227,7 @@ export default function HeroSearch({ makes = [], bodyTypesList = [] }: HeroSearc
             <button
               type="submit"
               className="w-full md:w-auto px-8 py-2 bg-[var(--primary)] text-white font-medium rounded-md hover:bg-[var(--primary-light)] transition-colors"
+              suppressHydrationWarning
             >
               Search Vehicles
             </button>
@@ -224,15 +238,15 @@ export default function HeroSearch({ makes = [], bodyTypesList = [] }: HeroSearc
         <div className="mt-4 pt-4 border-t border-[var(--border)]">
           <div className="flex flex-wrap gap-2 text-sm">
             <span className="text-[var(--foreground-muted)]">Quick Search:</span>
-            <button type="button" onClick={() => router.push('/inventory?condition=new')} className="text-[var(--primary)] hover:underline">New Cars</button>
+            <button type="button" onClick={() => router.push('/inventory?condition=new')} className="text-[var(--primary)] hover:underline" suppressHydrationWarning>New Cars</button>
             <span className="text-[var(--border-dark)]">|</span>
-            <button type="button" onClick={() => router.push('/inventory?condition=foreign_used')} className="text-[var(--primary)] hover:underline">Used Cars</button>
+            <button type="button" onClick={() => router.push('/inventory?condition=foreign_used')} className="text-[var(--primary)] hover:underline" suppressHydrationWarning>Used Cars</button>
             <span className="text-[var(--border-dark)]">|</span>
-            <button type="button" onClick={() => router.push('/inventory?bodyType=suv')} className="text-[var(--primary)] hover:underline">SUVs</button>
+            <button type="button" onClick={() => router.push('/inventory?bodyType=suv')} className="text-[var(--primary)] hover:underline" suppressHydrationWarning>SUVs</button>
             <span className="text-[var(--border-dark)]">|</span>
-            <button type="button" onClick={() => router.push('/inventory?make=toyota')} className="text-[var(--primary)] hover:underline">Toyota</button>
+            <button type="button" onClick={() => router.push('/inventory?make=toyota')} className="text-[var(--primary)] hover:underline" suppressHydrationWarning>Toyota</button>
             <span className="text-[var(--border-dark)]">|</span>
-            <button type="button" onClick={() => router.push('/inventory?maxPrice=5000000')} className="text-[var(--primary)] hover:underline">Under 5M</button>
+            <button type="button" onClick={() => router.push('/inventory?maxPrice=5000000')} className="text-[var(--primary)] hover:underline" suppressHydrationWarning>Under 5M</button>
           </div>
         </div>
       </form>
