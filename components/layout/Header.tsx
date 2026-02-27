@@ -42,7 +42,7 @@ export default function Header() {
           <Link href="/" className="flex items-center gap-2">
             <div className="relative w-10 h-10 overflow-hidden rounded">
               <Image
-                src="/logo.jpg"
+                src="/logo.png"
                 alt="CarSite Logo"
                 fill
                 className="object-cover"

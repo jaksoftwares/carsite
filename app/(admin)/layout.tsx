@@ -75,7 +75,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <Link href="/admin/dashboard" className="flex items-center gap-2">
               <div className="relative w-8 h-8 overflow-hidden rounded-lg bg-white">
                 <Image 
-                  src="/logo.jpg"
+                  src="/logo.png"
                   alt="CarSite Logo"
                   fill
                   className="object-cover"
@@ -87,7 +87,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           {collapsed && (
             <div className="relative w-8 h-8 overflow-hidden rounded-lg bg-white mx-auto">
               <Image 
-                src="/logo.jpg"
+                src="/logo.png"
                 alt="CarSite Logo"
                 fill
                 className="object-cover"

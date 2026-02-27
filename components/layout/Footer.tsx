@@ -35,7 +35,7 @@ export default function Footer() {
             <Link href="/" className="flex items-center gap-2 mb-4">
               <div className="relative w-10 h-10 overflow-hidden rounded bg-white">
                 <Image
-                  src="/logo.jpg"
+                  src="/logo.png"
                   alt="CarSite Logo"
                   fill
                   className="object-cover"
