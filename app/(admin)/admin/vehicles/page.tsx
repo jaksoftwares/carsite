@@ -444,9 +444,9 @@ export default function VehiclesPage() {
                   <td className="px-4 py-4">
                     <div className="flex items-center justify-end gap-2">
                       <Link
-                        href={`/vehicle/${vehicle.id}`}
+                        href={`/admin/vehicles/${vehicle.id}`}
                         className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="View"
+                        title="View Details"
                       >
                         <Eye size={16} />
                       </Link>
