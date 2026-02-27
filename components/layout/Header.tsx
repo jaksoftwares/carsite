@@ -40,17 +40,17 @@ export default function Header() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="relative w-10 h-10 overflow-hidden rounded">
+            <div className="relative w-32 h-10">
               <Image
                 src="/logo.png"
                 alt="CarSite Logo"
                 fill
-                className="object-cover"
+                className="object-contain"
               />
             </div>
-            <span className="text-xl font-bold text-[var(--primary)] hidden sm:block">
+            {/* <span className="text-xl font-bold text-[var(--primary)] hidden sm:block">
               CarSite
-            </span>
+            </span> */}
           </Link>
 
           {/* Desktop Navigation */}

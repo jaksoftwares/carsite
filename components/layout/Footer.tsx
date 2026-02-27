@@ -33,12 +33,12 @@ export default function Footer() {
           {/* Column 1 - Brand */}
           <div>
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="relative w-10 h-10 overflow-hidden rounded bg-white">
+              <div className="relative w-32 h-10">
                 <Image
                   src="/logo.png"
                   alt="CarSite Logo"
                   fill
-                  className="object-cover"
+                  className="object-contain"
                 />
               </div>
               <span className="text-xl font-bold">CarSite</span>

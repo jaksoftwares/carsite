@@ -69,28 +69,27 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}
       >
-        {/* Logo */}
         <div className="flex items-center justify-between h-16 px-4 border-b border-slate-700">
           {!collapsed && (
             <Link href="/admin/dashboard" className="flex items-center gap-2">
-              <div className="relative w-8 h-8 overflow-hidden rounded-lg bg-white">
+              <div className="relative w-28 h-8">
                 <Image 
                   src="/logo.png"
                   alt="CarSite Logo"
                   fill
-                  className="object-cover"
+                  className="object-contain"
                 />
               </div>
               <span className="font-bold text-lg">CarSite</span>
             </Link>
           )}
           {collapsed && (
-            <div className="relative w-8 h-8 overflow-hidden rounded-lg bg-white mx-auto">
+            <div className="relative w-12 h-8 mx-auto">
               <Image 
                 src="/logo.png"
                 alt="CarSite Logo"
                 fill
-                className="object-cover"
+                className="object-contain"
               />
             </div>
           )}
